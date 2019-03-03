@@ -5,6 +5,7 @@ import (
     "fmt"
     "log"
     "net/http"
+    "encoding/json"
 )
 //Env decribes struct that handles all requests
 type Env struct {
@@ -33,7 +34,6 @@ func (env *Env) getAllProducts(w http.ResponseWriter, r *http.Request) {
         http.Error(w, http.StatusText(500), 500)
         return
     }
-    for _, p := range products {
-        fmt.Fprintf(w, "%d, %s, %s, %d$\n", p.ID, p.Model,p.Company, p.Price)
-    }
+    resp, _ := json.Marshal(products)
+    fmt.Fprintln(w, string(resp))
 }

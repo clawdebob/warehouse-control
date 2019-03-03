@@ -12,14 +12,16 @@ type Product struct{
     Price int
 }
 
+type Products []Product
+
 //AllProducts handles SQL request to get all products from DB
-func (db *DB) AllProducts() ([]Product, error) {
+func (db *DB) AllProducts() (Products, error) {
     rows, err := db.Query("select * from products")
     if err != nil {
         panic(err)
     }
     defer rows.Close()
-    products := []Product{}
+    products := Products{}
 
     for rows.Next(){
         p:= Product {}
@@ -34,5 +36,6 @@ func (db *DB) AllProducts() ([]Product, error) {
     for _, p := range products {
         fmt.Println(p.ID, p.Model, p.Company, p.Price)
     }
+    //fmt.Println(string(resp))
     return products, nil
 }

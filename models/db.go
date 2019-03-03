@@ -6,7 +6,7 @@ import (
 )
 //Datastore contains meta data about all methods that our db should implement
 type Datastore interface {
-    AllProducts() ([]Product, error)
+    AllProducts() (Products, error)
 }
 //DB describes struct that implements Datastore
 type DB struct {
