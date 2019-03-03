@@ -2,11 +2,10 @@ package models
 
 import (
     "fmt"
-    "database/sql"
 )
 
-//product struct preserves single DB row of product
-type product struct{
+//Product struct preserves single DB row of product
+type Product struct{
     ID int
     Model string
     Company string
@@ -14,16 +13,16 @@ type product struct{
 }
 
 //AllProducts handles SQL request to get all products from DB
-func AllProducts(db *sql.DB) ([]product, error) {
+func (db *DB) AllProducts() ([]Product, error) {
     rows, err := db.Query("select * from products")
     if err != nil {
         panic(err)
     }
     defer rows.Close()
-    products := []product{}
+    products := []Product{}
 
     for rows.Next(){
-        p:= product {}
+        p:= Product {}
         err:= rows.Scan(&p.ID, &p.Model, &p.Company, &p.Price)
         if err != nil {
             fmt.Println(err)

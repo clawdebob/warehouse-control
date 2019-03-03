@@ -4,9 +4,17 @@ import (
     "database/sql"
     _ "github.com/mattn/go-sqlite3" //SQLite driver
 )
+//Datastore contains meta data about all methods that our db should implement
+type Datastore interface {
+    AllProducts() ([]Product, error)
+}
+//DB describes struct that implements Datastore
+type DB struct {
+    *sql.DB
+}
 
 //NewDB creates connection to specified DB
-func NewDB(databaseName string) (*sql.DB, error) {
+func NewDB(databaseName string) (*DB, error) {
     db, err := sql.Open("sqlite3", databaseName)
     if err != nil {
         return nil, err
@@ -14,5 +22,5 @@ func NewDB(databaseName string) (*sql.DB, error) {
     if err = db.Ping(); err != nil {
         return nil, err
     }
-    return db, nil
+    return &DB{db}, nil
 }

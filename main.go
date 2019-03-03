@@ -2,20 +2,13 @@ package main
 
 import (
     "./models"
-    "context"
-    "database/sql"
     "fmt"
     "log"
     "net/http"
 )
-
-type ContextInjector struct {
-    ctx context.Context
-    h   http.Handler
-}
-
-func (ci *ContextInjector) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    ci.h.ServeHTTP(w, r.WithContext(ci.ctx))
+//Env decribes struct that handles all requests
+type Env struct {
+    db models.Datastore
 }
 
 func main() {
@@ -23,25 +16,19 @@ func main() {
     if err != nil {
         log.Panic(err)
     }
-    ctx := context.WithValue(context.Background(), "db", db)
+    env := &Env{db}
 
-    http.Handle("/products", &ContextInjector{ctx, http.HandlerFunc(booksIndex)})
+    http.HandleFunc("/products", env.getAllProducts)
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func booksIndex(w http.ResponseWriter, r *http.Request) {
+func (env *Env) getAllProducts(w http.ResponseWriter, r *http.Request) {
     if r.Method != "GET" {
         http.Error(w, http.StatusText(405), 405)
         return
     }
 
-    db, ok := r.Context().Value("db").(*sql.DB)
-    if !ok {
-        http.Error(w, "could not get database connection pool from context", 500)
-        return
-    }
-
-    products, err := models.AllProducts(db)
+    products, err := env.db.AllProducts()
     if err != nil {
         http.Error(w, http.StatusText(500), 500)
         return
