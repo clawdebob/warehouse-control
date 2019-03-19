@@ -1,1 +1,2 @@
-test.db
+#Do not process database files
+*.db
