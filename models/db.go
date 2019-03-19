@@ -7,6 +7,7 @@ import (
 //Datastore contains meta data about all methods that our db should implement
 type Datastore interface {
     AllProducts() (Products, error)
+    InsertProduct(*Product) (error)
 }
 //DB describes struct that implements Datastore
 type DB struct {
@@ -16,6 +17,7 @@ type DB struct {
 //NewDB creates connection to specified DB
 func NewDB(databaseName string) (*DB, error) {
     db, err := sql.Open("sqlite3", databaseName)
+    db.SetMaxOpenConns(1)
     if err != nil {
         return nil, err
     }
