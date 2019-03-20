@@ -56,3 +56,20 @@ func (db *DB) InsertProduct(p *Product) error {
     }
     return nil
 }
+//DeleteProduct deletes product with selected ID from DB
+func (db *DB) DeleteProduct(id int) error {
+    req, err := db.Prepare("delete from products where id = ?")
+    defer req.Close()
+    if (err != nil) {
+        return err
+    }
+    res, err := req.Exec(id)
+    if (err != nil) {
+        return err
+    }
+    _, err = res.RowsAffected()
+    if (err != nil) {
+        return err
+    }
+    return nil
+}

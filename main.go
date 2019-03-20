@@ -21,6 +21,7 @@ func main() {
     env := &Env{db}
 
     http.HandleFunc("/add/product", env.addProduct)
+    http.HandleFunc("/delete/product", env.deleteProduct)
     http.HandleFunc("/products", env.getAllProducts)
     log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -34,12 +35,34 @@ func (env *Env) addProduct(w http.ResponseWriter, r *http.Request) {
     }
     r.ParseForm()
     req, _ := ioutil.ReadAll(r.Body)
-    err := json.Unmarshal([]byte(req), &p)
+    err := json.Unmarshal(req, &p)
     if (err != nil) {
         http.Error(w, http.StatusText(500), 500)
         return
     }
     err = env.db.InsertProduct(&p)
+    if (err != nil) {
+        http.Error(w, http.StatusText(500), 500)
+        log.Fatal(err)
+        return
+    }
+}
+
+func (env *Env) deleteProduct(w http.ResponseWriter, r *http.Request) {
+    var p models.Product
+
+    if r.Method != "POST" {
+        http.Error(w, http.StatusText(405), 405)
+        return
+    }
+    r.ParseForm()
+    req, _ := ioutil.ReadAll(r.Body)
+    err := json.Unmarshal(req, &p)
+    if (err != nil) {
+        http.Error(w, http.StatusText(500), 500)
+        return
+    }
+    err = env.db.DeleteProduct(p.ID)
     if (err != nil) {
         http.Error(w, http.StatusText(500), 500)
         log.Fatal(err)

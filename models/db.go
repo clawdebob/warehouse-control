@@ -8,6 +8,7 @@ import (
 type Datastore interface {
     AllProducts() (Products, error)
     InsertProduct(*Product) (error)
+    DeleteProduct(int) (error)
 }
 //DB describes struct that implements Datastore
 type DB struct {
