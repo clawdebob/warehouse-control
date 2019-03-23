@@ -7,10 +7,10 @@ import (
 
 //Product struct preserves single DB row of product
 type Product struct{
-    ID int
-    Model string
-    Company string
-    Price int
+    ID int         `json:"id"`
+    Model string   `json:"model"`
+    Company string `json:"company"`
+    Price int      `json:"price"`
 }
 
 //Products is a type that describes Products array

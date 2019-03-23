@@ -5,7 +5,6 @@ import (
     "log"
     "fmt"
     "net/http"
-    _ "regexp"
     "io/ioutil"
     "encoding/json"
 )
@@ -25,11 +24,9 @@ func main() {
     http.HandleFunc("/add/product", env.addProduct)
     http.HandleFunc("/delete/product", env.deleteProduct)
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
-    log.Print("server has started on http:/127.0.0.1" + port)
+    log.Print("server has started on http://127.0.0.1" + port)
     log.Fatal(http.ListenAndServe(port, nil))
 }
-
-// var getAllUrl = regexp.MustCompile("^/(products|suppliers|buyers|operations|)")
 
 func makeGetAllHandler(fn func() (models.Serializable, error)) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +75,7 @@ func (env *Env) addProduct(w http.ResponseWriter, r *http.Request) {
 func (env *Env) deleteProduct(w http.ResponseWriter, r *http.Request) {
     var p models.Product
 
-    if r.Method != "POST" {
+    if r.Method != "DELETE" {
         http.Error(w, http.StatusText(405), 405)
         return
     }
@@ -87,6 +84,7 @@ func (env *Env) deleteProduct(w http.ResponseWriter, r *http.Request) {
     err := json.Unmarshal(req, &p)
     if (err != nil) {
         http.Error(w, http.StatusText(500), 500)
+        log.Panic(err)
         return
     }
     err = env.db.DeleteProduct(p.ID)
@@ -95,19 +93,4 @@ func (env *Env) deleteProduct(w http.ResponseWriter, r *http.Request) {
         log.Fatal(err)
         return
     }
-}
-
-func (env *Env) getAllProducts(w http.ResponseWriter, r *http.Request) {
-    if r.Method != "GET" {
-        http.Error(w, http.StatusText(405), 405)
-        return
-    }
-
-    products, err := env.db.AllProducts()
-    if err != nil {
-        http.Error(w, http.StatusText(500), 500)
-        return
-    }
-    resp, _ := json.Marshal(products)
-    fmt.Fprintln(w, string(resp))
 }
