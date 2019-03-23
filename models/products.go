@@ -2,6 +2,7 @@ package models
 
 import (
     "fmt"
+    "encoding/json"
 )
 
 //Product struct preserves single DB row of product
@@ -15,8 +16,14 @@ type Product struct{
 //Products is a type that describes Products array
 type Products []Product
 
+//ToJSON for Products converts Product array to JSON
+func (p Products) ToJSON() (string, error) {
+    json, err := json.MarshalIndent(p, "", "    ")
+    return string(json), err
+}
+
 //AllProducts handles SQL request to get all products from DB
-func (db *DB) AllProducts() (Products, error) {
+func (db *DB) AllProducts() (Serializable, error) {
     rows, err := db.Query("select * from products")
     if err != nil {
         panic(err)
@@ -32,10 +39,6 @@ func (db *DB) AllProducts() (Products, error) {
             return nil, err
         }
         products = append(products, p)
-    }
-
-    for _, p := range products {
-        fmt.Println(p.ID, p.Model, p.Company, p.Price)
     }
     return products, nil
 }

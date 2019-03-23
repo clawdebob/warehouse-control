@@ -2,9 +2,10 @@ package main
 
 import (
     "./models"
-    "fmt"
     "log"
+    "fmt"
     "net/http"
+    _ "regexp"
     "io/ioutil"
     "encoding/json"
 )
@@ -14,6 +15,7 @@ type Env struct {
 }
 
 func main() {
+    const port = ":8080"
     db, err := models.NewDB("test.db")
     if err != nil {
         log.Panic(err)
@@ -22,8 +24,33 @@ func main() {
 
     http.HandleFunc("/add/product", env.addProduct)
     http.HandleFunc("/delete/product", env.deleteProduct)
-    http.HandleFunc("/products", env.getAllProducts)
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
+    log.Print("server has started on http:/127.0.0.1" + port)
+    log.Fatal(http.ListenAndServe(port, nil))
+}
+
+// var getAllUrl = regexp.MustCompile("^/(products|suppliers|buyers|operations|)")
+
+func makeGetAllHandler(fn func() (models.Serializable, error)) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != "GET" {
+            http.Error(w, http.StatusText(405), 405)
+            return
+        }
+        products, err := fn()
+        if err != nil {
+            http.Error(w, http.StatusText(500), 500)
+            log.Panic(err)
+            return
+        }
+        resp, err := products.ToJSON()
+        if err != nil {
+            http.Error(w, http.StatusText(500), 500)
+            log.Panic(err)
+            return
+        }
+        fmt.Fprintln(w, resp)
+    }
 }
 
 func (env *Env) addProduct(w http.ResponseWriter, r *http.Request) {
@@ -43,7 +70,7 @@ func (env *Env) addProduct(w http.ResponseWriter, r *http.Request) {
     err = env.db.InsertProduct(&p)
     if (err != nil) {
         http.Error(w, http.StatusText(500), 500)
-        log.Fatal(err)
+        log.Panic(err)
         return
     }
 }
