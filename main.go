@@ -8,7 +8,7 @@ import (
     "io/ioutil"
     "encoding/json"
 )
-//Env decribes struct that handles all requests
+//Env decribes struct that contains handlers for all requests
 type Env struct {
     db models.Datastore
 }
@@ -21,7 +21,7 @@ func main() {
     }
     env := &Env{db}
 
-    http.HandleFunc("/add/product", env.addProduct)
+    http.HandleFunc("/add/product", makeAddHandler(env.db.InsertProduct))
     http.HandleFunc("/delete/product", env.deleteProduct)
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
     log.Print("server has started on http://127.0.0.1" + port)
@@ -34,13 +34,13 @@ func makeGetAllHandler(fn func() (models.Serializable, error)) http.HandlerFunc 
             http.Error(w, http.StatusText(405), 405)
             return
         }
-        products, err := fn()
+        entities, err := fn()
         if err != nil {
             http.Error(w, http.StatusText(500), 500)
             log.Panic(err)
             return
         }
-        resp, err := products.ToJSON()
+        resp, err := entities.ToJSON()
         if err != nil {
             http.Error(w, http.StatusText(500), 500)
             log.Panic(err)
@@ -50,26 +50,22 @@ func makeGetAllHandler(fn func() (models.Serializable, error)) http.HandlerFunc 
     }
 }
 
-func (env *Env) addProduct(w http.ResponseWriter, r *http.Request) {
-    var p models.Product
+func makeAddHandler(fn func([]byte) error) http.HandlerFunc {
+        return func(w http.ResponseWriter, r *http.Request) {
+            if r.Method != "POST" {
+                http.Error(w, http.StatusText(405), 405)
+                return
+            }
+            r.ParseForm()
+            req, _ := ioutil.ReadAll(r.Body)
+            err := fn(req)
+            if (err != nil) {
+                http.Error(w, http.StatusText(500), 500)
+                log.Panic(err)
+                return
+            }
 
-    if r.Method != "POST" {
-        http.Error(w, http.StatusText(405), 405)
-        return
-    }
-    r.ParseForm()
-    req, _ := ioutil.ReadAll(r.Body)
-    err := json.Unmarshal(req, &p)
-    if (err != nil) {
-        http.Error(w, http.StatusText(500), 500)
-        return
-    }
-    err = env.db.InsertProduct(&p)
-    if (err != nil) {
-        http.Error(w, http.StatusText(500), 500)
-        log.Panic(err)
-        return
-    }
+        }
 }
 
 func (env *Env) deleteProduct(w http.ResponseWriter, r *http.Request) {

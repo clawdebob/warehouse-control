@@ -5,15 +5,15 @@ import (
     _ "github.com/mattn/go-sqlite3" //SQLite driver
 )
 
-//Serializable describes DB entities than can be parsed to json
+//Serializable describes DB entities than can be serialized to json
 type Serializable interface {
     ToJSON() (string, error)
 }
 //Datastore contains meta data about all methods that our db should implement
 type Datastore interface {
     AllProducts() (Serializable, error)
-    InsertProduct(*Product) (error)
-    DeleteProduct(int) (error)
+    InsertProduct([]byte) error
+    DeleteProduct(int) error
 }
 //DB describes struct that implements Datastore
 type DB struct {

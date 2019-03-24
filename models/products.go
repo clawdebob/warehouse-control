@@ -12,6 +12,11 @@ type Product struct{
     Company string `json:"company"`
     Price int      `json:"price"`
 }
+//FromJSON for Product converts JSON to Product entry
+func (p *Product) FromJSON(parse []byte) (error) {
+    err := json.Unmarshal(parse, p)
+    return err
+}
 
 //Products is a type that describes Products array
 type Products []Product
@@ -43,7 +48,12 @@ func (db *DB) AllProducts() (Serializable, error) {
     return products, nil
 }
 //InsertProduct adds a new product entry in DB
-func (db *DB) InsertProduct(p *Product) error {
+func (db *DB) InsertProduct(parse []byte) error {
+    var p Product
+    err := json.Unmarshal(parse, &p)
+    if (err != nil) {
+        return err
+    }
     req, err := db.Prepare("insert into products(model,company,price) values($1,$2,$3)")
     defer req.Close()
     if (err != nil) {
