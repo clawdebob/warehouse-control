@@ -6,7 +6,6 @@ import (
     "fmt"
     "net/http"
     "io/ioutil"
-    "encoding/json"
 )
 //Env decribes struct that contains handlers for all requests
 type Env struct {
@@ -22,7 +21,7 @@ func main() {
     env := &Env{db}
 
     http.HandleFunc("/add/product", makeAddHandler(env.db.InsertProduct))
-    http.HandleFunc("/delete/product", env.deleteProduct)
+    http.HandleFunc("/delete/product", makeDeleteHandler(env.db.DeleteProduct))
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
     log.Print("server has started on http://127.0.0.1" + port)
     log.Fatal(http.ListenAndServe(port, nil))
@@ -68,25 +67,20 @@ func makeAddHandler(fn func([]byte) error) http.HandlerFunc {
         }
 }
 
-func (env *Env) deleteProduct(w http.ResponseWriter, r *http.Request) {
-    var p models.Product
+func makeDeleteHandler(fn func([]byte) error) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        if r.Method != "DELETE" {
+            http.Error(w, http.StatusText(405), 405)
+            return
+        }
+        r.ParseForm()
+        req, _ := ioutil.ReadAll(r.Body)
+        err := fn(req)
+        if (err != nil) {
+            http.Error(w, http.StatusText(500), 500)
+            log.Panic(err)
+            return
+        }
 
-    if r.Method != "DELETE" {
-        http.Error(w, http.StatusText(405), 405)
-        return
-    }
-    r.ParseForm()
-    req, _ := ioutil.ReadAll(r.Body)
-    err := json.Unmarshal(req, &p)
-    if (err != nil) {
-        http.Error(w, http.StatusText(500), 500)
-        log.Panic(err)
-        return
-    }
-    err = env.db.DeleteProduct(p.ID)
-    if (err != nil) {
-        http.Error(w, http.StatusText(500), 500)
-        log.Fatal(err)
-        return
     }
 }

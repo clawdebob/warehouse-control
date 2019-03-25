@@ -13,7 +13,7 @@ type Serializable interface {
 type Datastore interface {
     AllProducts() (Serializable, error)
     InsertProduct([]byte) error
-    DeleteProduct(int) error
+    DeleteProduct([]byte) error
 }
 //DB describes struct that implements Datastore
 type DB struct {

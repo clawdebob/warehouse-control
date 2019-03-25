@@ -70,7 +70,13 @@ func (db *DB) InsertProduct(parse []byte) error {
     return nil
 }
 //DeleteProduct deletes product with selected ID from DB
-func (db *DB) DeleteProduct(id int) error {
+func (db *DB) DeleteProduct(parse []byte) error {
+    var p Product
+    err := json.Unmarshal(parse, &p)
+    if (err != nil) {
+        return err
+    }
+    id := p.ID
     req, err := db.Prepare("delete from products where id = ?")
     defer req.Close()
     if (err != nil) {
