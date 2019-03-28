@@ -13,7 +13,7 @@
         - Установить `Golang` можно при помощи команды `sudo apt-get install golang`
     - **Для Windows**
         - Установить `Golang` можно с помощью инсталлятора, который можно скачать с [официального сайта](https://golang.org/dl/ "Официальный сайт Go")
-        - Так же для корректной установки зависимостей, использующих `cgo`, необходимо установить [`MinGW`](https://sourceforge.net/projects/mingw-w64/ "MinGW (64-bit)")
+        - Так же для установки зависимостей, использующих `cgo`, необходимо установить [`MinGW`](https://sourceforge.net/projects/mingw-w64/ "MinGW (64-bit)") и [`TDM-GCC`](http://tdm-gcc.tdragon.net/download "TDM-GCC")
 3. Установить необходимые зависимости при помощи команды `go get -t` в директории репозитория
 ### Клиент
 4. Для работы клиента потребуется установить [NodeJS](https://nodejs.org/en/download/ "Официальный сайт NodeJS")
