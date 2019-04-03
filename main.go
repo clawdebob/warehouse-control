@@ -14,7 +14,7 @@ type Env struct {
 
 func main() {
     const port = ":8080"
-    db, err := models.NewDB("test.db")
+    db, err := models.NewDB("warehouse.db")
     if err != nil {
         log.Panic(err)
     }
@@ -36,13 +36,13 @@ func makeGetAllHandler(fn func() (models.Serializable, error)) http.HandlerFunc 
         entities, err := fn()
         if err != nil {
             http.Error(w, http.StatusText(500), 500)
-            log.Panic(err)
+            log.Print(err)
             return
         }
         resp, err := entities.ToJSON()
         if err != nil {
             http.Error(w, http.StatusText(500), 500)
-            log.Panic(err)
+            log.Print(err)
             return
         }
         fmt.Fprintln(w, resp)
@@ -60,7 +60,7 @@ func makeAddHandler(fn func([]byte) error) http.HandlerFunc {
             err := fn(req)
             if (err != nil) {
                 http.Error(w, http.StatusText(500), 500)
-                log.Panic(err)
+                log.Print(err)
                 return
             }
 
@@ -78,7 +78,7 @@ func makeDeleteHandler(fn func([]byte) error) http.HandlerFunc {
         err := fn(req)
         if (err != nil) {
             http.Error(w, http.StatusText(500), 500)
-            log.Panic(err)
+            log.Print(err)
             return
         }
 

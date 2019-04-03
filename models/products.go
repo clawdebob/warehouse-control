@@ -3,14 +3,17 @@ package models
 import (
     "fmt"
     "encoding/json"
+    "crypto/rand"
 )
 
 //Product struct preserves single DB row of product
 type Product struct{
-    ID int         `json:"id"`
-    Model string   `json:"model"`
-    Company string `json:"company"`
-    Price int      `json:"price"`
+    Serial string       `json:"serial"`
+    Name string         `json:"name"`
+    Company string      `json:"company"`
+    Place int           `json:"place"`
+    Column int          `json:"column"`
+    Row int             `json:"row"`
 }
 //FromJSON for Product converts JSON to Product entry
 func (p *Product) FromJSON(parse []byte) (error) {
@@ -29,16 +32,23 @@ func (p Products) ToJSON() (string, error) {
 
 //AllProducts handles SQL request to get all products from DB
 func (db *DB) AllProducts() (Serializable, error) {
-    rows, err := db.Query("select * from products")
+    rows, err := db.Query("select * from Goods")
     if err != nil {
-        panic(err)
+        return nil, err
     }
     defer rows.Close()
     products := Products{}
 
     for rows.Next(){
         p:= Product {}
-        err:= rows.Scan(&p.ID, &p.Model, &p.Company, &p.Price)
+        err:= rows.Scan(
+            &p.Serial,
+            &p.Name,
+            &p.Company,
+            &p.Row,
+            &p.Column,
+            &p.Place,
+         )
         if err != nil {
             fmt.Println(err)
             return nil, err
@@ -54,18 +64,35 @@ func (db *DB) InsertProduct(parse []byte) error {
     if (err != nil) {
         return err
     }
-    req, err := db.Prepare("insert into products(model,company,price) values($1,$2,$3)")
+    req, err := db.Prepare("insert into Goods values($1,$2,$3,$4,$5,$6)")
     defer req.Close()
     if (err != nil) {
         return err
     }
-    res, err := req.Exec(p.Model, p.Company, p.Price)
+    b := make([]byte, 16)
+    _, err = rand.Read(b)
+    if err != nil {
+        return err
+    }
+    serial := fmt.Sprintf("%x", b[0:4])
+    p.Serial = serial
+    res, err := req.Exec(
+        p.Serial,
+        p.Name,
+        p.Company,
+        p.Row,
+        p.Column,
+        p.Place,
+    )
     if (err != nil) {
         return err
     }
-    _, err = res.RowsAffected()
+    rc, err := res.RowsAffected()
     if (err != nil) {
         return err
+    }
+    if (rc == 0) {
+        return fmt.Errorf("warning!!! 0 rows affected")
     }
     return nil
 }
@@ -76,8 +103,8 @@ func (db *DB) DeleteProduct(parse []byte) error {
     if (err != nil) {
         return err
     }
-    id := p.ID
-    req, err := db.Prepare("delete from products where id = ?")
+    id := p.Serial
+    req, err := db.Prepare("delete from Goods where Serial = ?")
     defer req.Close()
     if (err != nil) {
         return err
@@ -86,9 +113,12 @@ func (db *DB) DeleteProduct(parse []byte) error {
     if (err != nil) {
         return err
     }
-    _, err = res.RowsAffected()
+    rc, err := res.RowsAffected()
     if (err != nil) {
         return err
+    }
+    if (rc == 0) {
+        return fmt.Errorf("warning!!! 0 rows affected")
     }
     return nil
 }
