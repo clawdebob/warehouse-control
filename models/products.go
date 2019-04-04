@@ -6,7 +6,7 @@ import (
     "crypto/rand"
 )
 
-//Product struct preserves single DB row of product
+//Product represents single DB row of product
 type Product struct{
     Serial string       `json:"serial"`
     Name string         `json:"name"`
@@ -50,7 +50,6 @@ func (db *DB) AllProducts() (Serializable, error) {
             &p.Place,
          )
         if err != nil {
-            fmt.Println(err)
             return nil, err
         }
         products = append(products, p)
@@ -96,7 +95,7 @@ func (db *DB) InsertProduct(parse []byte) error {
     }
     return nil
 }
-//DeleteProduct deletes product with selected ID from DB
+//DeleteProduct deletes product with selected Serial from DB
 func (db *DB) DeleteProduct(parse []byte) error {
     var p Product
     err := json.Unmarshal(parse, &p)

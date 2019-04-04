@@ -12,8 +12,11 @@ type Serializable interface {
 //Datastore contains meta data about all methods that our db should implement
 type Datastore interface {
     AllProducts() (Serializable, error)
+    AllPersons() (Serializable, error)
     InsertProduct([]byte) error
     DeleteProduct([]byte) error
+    InsertPerson([]byte) error
+    DeletePerson([]byte) error
 }
 //DB describes struct that implements Datastore
 type DB struct {

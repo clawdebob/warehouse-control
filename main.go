@@ -21,8 +21,11 @@ func main() {
     env := &Env{db}
 
     http.HandleFunc("/add/product", makeAddHandler(env.db.InsertProduct))
+    http.HandleFunc("/add/person", makeAddHandler(env.db.InsertPerson))
     http.HandleFunc("/delete/product", makeDeleteHandler(env.db.DeleteProduct))
+    http.HandleFunc("/delete/person", makeDeleteHandler(env.db.DeletePerson))
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
+    http.HandleFunc("/persons", makeGetAllHandler(env.db.AllPersons))
     log.Print("server has started on http://127.0.0.1" + port)
     log.Fatal(http.ListenAndServe(port, nil))
 }
