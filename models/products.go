@@ -4,6 +4,8 @@ import (
     "fmt"
     "encoding/json"
     "crypto/rand"
+    "strings"
+    "strconv"
 )
 
 //Product represents single DB row of product
@@ -120,4 +122,62 @@ func (db *DB) DeleteProduct(parse []byte) error {
         return fmt.Errorf("warning!!! 0 rows affected")
     }
     return nil
+}
+//FilterProduct filters Good's rows according to specified filters
+func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
+    var p Product
+    finalQuery := "Select * from Goods where"
+    sortBy := " order by Name"
+    query := make([]string, 0)
+    err := json.Unmarshal(data, &p)
+    if (err != nil) {
+        return nil, err
+    }
+    if p.Serial != "" {
+        query = append(query, " Serial like '" + p.Serial + "%'")
+    }
+    if p.Name != "" {
+        query = append(query, " Name like '" + p.Name + "%'")
+    }
+    if p.Company != "" {
+        query = append(query, " Manufacturer like '" + p.Company + "%'")
+    }
+    if p.Place != 0 {
+        query = append(query, " Place = " + strconv.Itoa(p.Place))
+    }
+    if p.Row != 0 {
+        query = append(query, " Row = " + strconv.Itoa(p.Row))
+    }
+    if p.Column != 0 {
+        query = append(query, " Columm = " + strconv.Itoa(p.Column))
+    }
+    if sort == "desc" {
+        sortBy += " desc"
+    }
+    finalQuery += strings.Join(query, " and") + sortBy
+    fmt.Println(finalQuery)
+    rows, err := db.Query(finalQuery)
+    if err != nil {
+        return nil, err
+    }
+
+    defer rows.Close()
+    products := Products{}
+
+    for rows.Next(){
+        p:= Product {}
+        err:= rows.Scan(
+            &p.Serial,
+            &p.Name,
+            &p.Company,
+            &p.Row,
+            &p.Column,
+            &p.Place,
+         )
+        if err != nil {
+            return nil, err
+        }
+        products = append(products, p)
+    }
+    return products, nil
 }

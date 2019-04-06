@@ -17,6 +17,7 @@ type Datastore interface {
     DeleteProduct([]byte) error
     InsertPerson([]byte) error
     DeletePerson([]byte) error
+    FilterProduct([]byte, string) (Serializable, error)
 }
 //DB describes struct that implements Datastore
 type DB struct {
