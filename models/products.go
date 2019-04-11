@@ -32,12 +32,13 @@ func (p Products) ToJSON() (string, error) {
     return string(json), err
 }
 
-//AllProducts handles SQL request to get all products from DB
-func (db *DB) AllProducts() (Serializable, error) {
-    rows, err := db.Query("select * from Goods")
+func (db *DB) getProductsQuery(q string) (Serializable, error) {
+    fmt.Println(q)
+    rows, err := db.Query(q)
     if err != nil {
         return nil, err
     }
+
     defer rows.Close()
     products := Products{}
 
@@ -58,15 +59,15 @@ func (db *DB) AllProducts() (Serializable, error) {
     }
     return products, nil
 }
+
+//AllProducts handles SQL request to get all products from DB
+func (db *DB) AllProducts() (Serializable, error) {
+    return db.getProductsQuery("select * from Goods")
+}
 //InsertProduct adds a new product entry in DB
 func (db *DB) InsertProduct(parse []byte) error {
     var p Product
     err := json.Unmarshal(parse, &p)
-    if (err != nil) {
-        return err
-    }
-    req, err := db.Prepare("insert into Goods values($1,$2,$3,$4,$5,$6)")
-    defer req.Close()
     if (err != nil) {
         return err
     }
@@ -77,7 +78,8 @@ func (db *DB) InsertProduct(parse []byte) error {
     }
     serial := fmt.Sprintf("%x", b[0:4])
     p.Serial = serial
-    res, err := req.Exec(
+    return db.execEntity(
+        "insert into Goods values($1,$2,$3,$4,$5,$6)",
         p.Serial,
         p.Name,
         p.Company,
@@ -85,17 +87,6 @@ func (db *DB) InsertProduct(parse []byte) error {
         p.Column,
         p.Place,
     )
-    if (err != nil) {
-        return err
-    }
-    rc, err := res.RowsAffected()
-    if (err != nil) {
-        return err
-    }
-    if (rc == 0) {
-        return fmt.Errorf("warning!!! 0 rows affected")
-    }
-    return nil
 }
 //DeleteProduct deletes product with selected Serial from DB
 func (db *DB) DeleteProduct(parse []byte) error {
@@ -105,23 +96,7 @@ func (db *DB) DeleteProduct(parse []byte) error {
         return err
     }
     id := p.Serial
-    req, err := db.Prepare("delete from Goods where Serial = ?")
-    defer req.Close()
-    if (err != nil) {
-        return err
-    }
-    res, err := req.Exec(id)
-    if (err != nil) {
-        return err
-    }
-    rc, err := res.RowsAffected()
-    if (err != nil) {
-        return err
-    }
-    if (rc == 0) {
-        return fmt.Errorf("warning!!! 0 rows affected")
-    }
-    return nil
+    return db.execEntity("delete from Goods where Serial = ?", id)
 }
 //FilterProduct filters Good's rows according to specified filters
 func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
@@ -155,29 +130,5 @@ func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
         sortBy += " desc"
     }
     finalQuery += strings.Join(query, " and") + sortBy
-    fmt.Println(finalQuery)
-    rows, err := db.Query(finalQuery)
-    if err != nil {
-        return nil, err
-    }
-
-    defer rows.Close()
-    products := Products{}
-
-    for rows.Next(){
-        p:= Product {}
-        err:= rows.Scan(
-            &p.Serial,
-            &p.Name,
-            &p.Company,
-            &p.Row,
-            &p.Column,
-            &p.Place,
-         )
-        if err != nil {
-            return nil, err
-        }
-        products = append(products, p)
-    }
-    return products, nil
+    return db.getProductsQuery(finalQuery)
 }

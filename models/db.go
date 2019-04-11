@@ -2,6 +2,7 @@ package models
 
 import (
     "database/sql"
+    "fmt"
     _ "github.com/mattn/go-sqlite3" //SQLite driver
 )
 
@@ -35,4 +36,24 @@ func NewDB(databaseName string) (*DB, error) {
         return nil, err
     }
     return &DB{db}, nil
+}
+
+func (db *DB) execEntity(q string, args ...interface{}) error {
+    req, err := db.Prepare(q)
+    defer req.Close()
+    if (err != nil) {
+        return err
+    }
+    res, err := req.Exec( args...)
+    if (err != nil) {
+        return err
+    }
+    rc, err := res.RowsAffected()
+    if (err != nil) {
+        return err
+    }
+    if (rc == 0) {
+        return fmt.Errorf("warning!!! 0 rows affected")
+    }
+    return nil
 }
