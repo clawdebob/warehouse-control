@@ -22,12 +22,13 @@ func (p Persons) ToJSON() (string, error) {
     return string(json), err
 }
 
-//AllPersons handles SQL request to get all persons from DB
-func (db *DB) AllPersons() (Serializable, error) {
-    rows, err := db.Query("select * from Clients")
+func (db *DB) getPersonsQuery(q string) (Serializable, error) {
+    fmt.Println(q)
+    rows, err := db.Query(q)
     if err != nil {
         return nil, err
     }
+
     defer rows.Close()
     persons := Persons{}
 
@@ -49,6 +50,11 @@ func (db *DB) AllPersons() (Serializable, error) {
     return persons, nil
 }
 
+//AllPersons handles SQL request to get all persons from DB
+func (db *DB) AllPersons() (Serializable, error) {
+    return db.getPersonsQuery("SELECT * FROM Clients")
+}
+
 //InsertPerson adds a new person entry in DB
 func (db *DB) InsertPerson(parse []byte) error {
     var p Person
@@ -56,29 +62,14 @@ func (db *DB) InsertPerson(parse []byte) error {
     if (err != nil) {
         return err
     }
-    req, err := db.Prepare("insert into Clients(Name,ClientType,Address,Email,PhoneNumber) values($1,$2,$3,$4,$5)")
-    defer req.Close()
-    if (err != nil) {
-        return err
-    }
-    res, err := req.Exec(
+    return db.execEntity(
+        "INSERT INTO Clients(Name,ClientType,Address,Email,PhoneNumber) VALUES($1,$2,$3,$4,$5)",
         p.Name,
         p.Type,
         p.Address,
         p.Email,
         p.PhoneNumber,
     )
-    if (err != nil) {
-        return err
-    }
-    rc, err := res.RowsAffected()
-    if (err != nil) {
-        return err
-    }
-    if (rc == 0) {
-        return fmt.Errorf("warning!!! 0 rows affected")
-    }
-    return nil
 }
 //DeletePerson deletes person with selected ID from DB
 func (db *DB) DeletePerson(parse []byte) error {
@@ -87,22 +78,5 @@ func (db *DB) DeletePerson(parse []byte) error {
     if (err != nil) {
         return err
     }
-    id := p.ID
-    req, err := db.Prepare("delete from Clients where Id = ?")
-    defer req.Close()
-    if (err != nil) {
-        return err
-    }
-    res, err := req.Exec(id)
-    if (err != nil) {
-        return err
-    }
-    rc, err := res.RowsAffected()
-    if (err != nil) {
-        return err
-    }
-    if (rc == 0) {
-        return fmt.Errorf("warning!!! 0 rows affected")
-    }
-    return nil
+    return db.execEntity("DELETE FROM Clients WHERE Id = ?", p.ID)
 }
