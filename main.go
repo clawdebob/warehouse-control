@@ -27,6 +27,7 @@ func main() {
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
     http.HandleFunc("/persons", makeGetAllHandler(env.db.AllPersons))
     http.HandleFunc("/filter/product", makeFilterHandler(env.db.FilterProduct))
+    http.HandleFunc("/edit/product", makeAddHandler(env.db.EditProduct))
     log.Print("server has started on http://127.0.0.1" + port)
     log.Fatal(http.ListenAndServe(port, nil))
 }

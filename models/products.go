@@ -5,7 +5,6 @@ import (
     "encoding/json"
     "crypto/rand"
     "strings"
-    "strconv"
 )
 
 //Product represents single DB row of product
@@ -62,7 +61,7 @@ func (db *DB) getProductsQuery(q string) (Serializable, error) {
 
 //AllProducts handles SQL request to get all products from DB
 func (db *DB) AllProducts() (Serializable, error) {
-    return db.getProductsQuery("select * from Goods")
+    return db.getProductsQuery("SELECT * FROM Goods")
 }
 //InsertProduct adds a new product entry in DB
 func (db *DB) InsertProduct(parse []byte) error {
@@ -79,7 +78,7 @@ func (db *DB) InsertProduct(parse []byte) error {
     serial := fmt.Sprintf("%x", b[0:4])
     p.Serial = serial
     return db.execEntity(
-        "insert into Goods values($1,$2,$3,$4,$5,$6)",
+        "INSERT INTO Goods VALUES($1,$2,$3,$4,$5,$6)",
         p.Serial,
         p.Name,
         p.Company,
@@ -87,6 +86,39 @@ func (db *DB) InsertProduct(parse []byte) error {
         p.Column,
         p.Place,
     )
+}
+//EditProduct edits specified parameters of one product entry
+func (db *DB) EditProduct(data []byte) error {
+    var p Product
+    finalQuery := "UPDATE Goods SET"
+    query := make([]string, 0)
+    err := json.Unmarshal(data, &p)
+    if (err != nil) {
+        return err
+    }
+    if p.Name != "" {
+        query = append(query, fmt.Sprintf(" Name = '%s'", p.Name))
+    }
+    if p.Company != "" {
+        query = append(query, fmt.Sprintf(" Manufacturer = '%s'", p.Company))
+    }
+    if p.Place != 0 {
+        query = append(query, fmt.Sprintf(" Place = %d", p.Place))
+    }
+    if p.Row != 0 {
+        query = append(query, fmt.Sprintf(" Row = %d", p.Row))
+    }
+    if p.Column != 0 {
+        query = append(query, fmt.Sprintf(" Columm = %d", p.Column))
+    }
+    finalQuery += strings.Join(query, " ,")
+    if p.Serial != "" {
+        finalQuery += fmt.Sprintf(" WHERE Serial = '%s'", p.Serial)
+    } else {
+        return fmt.Errorf("serial is empty")
+    }
+
+    return db.execEntity(finalQuery)
 }
 //DeleteProduct deletes product with selected Serial from DB
 func (db *DB) DeleteProduct(parse []byte) error {
@@ -96,39 +128,39 @@ func (db *DB) DeleteProduct(parse []byte) error {
         return err
     }
     id := p.Serial
-    return db.execEntity("delete from Goods where Serial = ?", id)
+    return db.execEntity("DELETE FROM Goods WHERE Serial = ?", id)
 }
 //FilterProduct filters Good's rows according to specified filters
 func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
     var p Product
-    finalQuery := "Select * from Goods where"
-    sortBy := " order by Name"
+    finalQuery := "SELECT * FROM Goods WHERE"
+    sortBy := " ORDER BY Name"
     query := make([]string, 0)
     err := json.Unmarshal(data, &p)
     if (err != nil) {
         return nil, err
     }
     if p.Serial != "" {
-        query = append(query, " Serial like '" + p.Serial + "%'")
+        query = append(query, fmt.Sprintf(" Serial LIKE '%s%%'", p.Serial))
     }
     if p.Name != "" {
-        query = append(query, " Name like '" + p.Name + "%'")
+        query = append(query, fmt.Sprintf(" Name LIKE '%s%%'", p.Name))
     }
     if p.Company != "" {
-        query = append(query, " Manufacturer like '" + p.Company + "%'")
+        query = append(query, fmt.Sprintf(" Manufacturer LIKE '%s%%'", p.Company))
     }
     if p.Place != 0 {
-        query = append(query, " Place = " + strconv.Itoa(p.Place))
+        query = append(query, fmt.Sprintf(" Place = %d", p.Place))
     }
     if p.Row != 0 {
-        query = append(query, " Row = " + strconv.Itoa(p.Row))
+        query = append(query, fmt.Sprintf(" Row = %d", p.Row))
     }
     if p.Column != 0 {
-        query = append(query, " Columm = " + strconv.Itoa(p.Column))
+        query = append(query, fmt.Sprintf(" Columm = %d", p.Column))
     }
     if sort == "desc" {
-        sortBy += " desc"
+        sortBy += " DESC"
     }
-    finalQuery += strings.Join(query, " and") + sortBy
+    finalQuery += strings.Join(query, " AND") + sortBy
     return db.getProductsQuery(finalQuery)
 }
