@@ -3,6 +3,8 @@ package models
 import (
     "database/sql"
     "fmt"
+    "reflect"
+    "strings"
     _ "github.com/mattn/go-sqlite3" //SQLite driver
 )
 
@@ -22,6 +24,7 @@ type Datastore interface {
     FilterPerson([]byte, string) (Serializable, error)
     EditProduct([]byte) error
     EditPerson([]byte) error
+    InitRef()
 }
 //DB describes struct that implements Datastore
 type DB struct {
@@ -39,6 +42,37 @@ func NewDB(databaseName string) (*DB, error) {
         return nil, err
     }
     return &DB{db}, nil
+}
+
+func (db *DB) constructFilterQuery(tableName string, e interface{}) (string, error){
+    finalQuery := fmt.Sprintf("SELECT * FROM %s WHERE", tableName)
+    query := make([]string, 0)
+    typ := reflect.TypeOf(e)
+    val := reflect.ValueOf(e)
+    for c := 0; c < typ.NumField(); c++ {
+        field := typ.Field(c)
+        value := val.Field(c)
+        sqlName, ok := field.Tag.Lookup("sql")
+        if !ok {
+            sqlName = field.Name
+        }
+        switch field.Type.Kind() {
+            case reflect.Int:
+                if value.Int() != 0 {
+                    query = append(query, fmt.Sprintf(" %s = %d", sqlName, value.Int()))
+                }
+                break;
+            case reflect.String:
+                if value.String() != "" {
+                    query = append(query, fmt.Sprintf(" %s LIKE '%s%%'", sqlName, value.String()))
+                }
+                break;
+            default:
+                return "", fmt.Errorf("unhandled type")
+        }
+    }
+    finalQuery += strings.Join(query, " AND")
+    return finalQuery, nil
 }
 
 func (db *DB) execEntity(q string, args ...interface{}) error {

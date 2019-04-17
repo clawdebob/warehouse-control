@@ -19,17 +19,18 @@ func main() {
         log.Panic(err)
     }
     env := &Env{db}
+    env.db.InitRef()
 
-    http.HandleFunc("/add/product", makeAddHandler(env.db.InsertProduct))
-    http.HandleFunc("/add/person", makeAddHandler(env.db.InsertPerson))
-    http.HandleFunc("/delete/product", makeDeleteHandler(env.db.DeleteProduct))
-    http.HandleFunc("/delete/person", makeDeleteHandler(env.db.DeletePerson))
+    http.HandleFunc("/add/product", makeTxHandler(env.db.InsertProduct, "POST"))
+    http.HandleFunc("/add/person", makeTxHandler(env.db.InsertPerson, "POST"))
+    http.HandleFunc("/delete/product", makeTxHandler(env.db.DeleteProduct, "DELETE"))
+    http.HandleFunc("/delete/person", makeTxHandler(env.db.DeletePerson, "DELETE"))
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
     http.HandleFunc("/persons", makeGetAllHandler(env.db.AllPersons))
     http.HandleFunc("/filter/product", makeFilterHandler(env.db.FilterProduct))
     http.HandleFunc("/filter/person", makeFilterHandler(env.db.FilterPerson))
-    http.HandleFunc("/edit/product", makeAddHandler(env.db.EditProduct))
-    http.HandleFunc("/edit/person", makeAddHandler(env.db.EditPerson))
+    http.HandleFunc("/edit/product", makeTxHandler(env.db.EditProduct, "POST"))
+    http.HandleFunc("/edit/person", makeTxHandler(env.db.EditPerson, "POST"))
     log.Print("server has started on http://127.0.0.1" + port)
     log.Fatal(http.ListenAndServe(port, nil))
 }
@@ -56,9 +57,9 @@ func makeGetAllHandler(fn func() (models.Serializable, error)) http.HandlerFunc 
     }
 }
 
-func makeAddHandler(fn func([]byte) error) http.HandlerFunc {
+func makeTxHandler(fn func([]byte) error, method string) http.HandlerFunc {
         return func(w http.ResponseWriter, r *http.Request) {
-            if r.Method != "POST" {
+            if r.Method != method {
                 http.Error(w, http.StatusText(405), 405)
                 return
             }
@@ -96,23 +97,5 @@ func makeFilterHandler(fn func([]byte, string) (models.Serializable, error)) htt
             return
         }
         fmt.Fprintln(w, resp)
-    }
-}
-
-func makeDeleteHandler(fn func([]byte) error) http.HandlerFunc {
-    return func(w http.ResponseWriter, r *http.Request) {
-        if r.Method != "DELETE" {
-            http.Error(w, http.StatusText(405), 405)
-            return
-        }
-        r.ParseForm()
-        req, _ := ioutil.ReadAll(r.Body)
-        err := fn(req)
-        if (err != nil) {
-            http.Error(w, http.StatusText(500), 500)
-            log.Print(err)
-            return
-        }
-
     }
 }

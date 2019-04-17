@@ -7,9 +7,9 @@ import (
 )
 //Person struct represents single DB row of client
 type Person struct {
-    ID int              `json:"id"`
+    ID int              `json:"id" sql:"Id"`
     Name string         `json:"name"`
-    Type int            `json:"type"`
+    Type int            `json:"type" sql:"ClientType"`
     Address string      `json:"address"`
     Email string        `json:"email"`
     PhoneNumber string  `json:"phone"`
@@ -118,34 +118,18 @@ func (db *DB) EditPerson(data []byte) error{
 //FilterPerson filters Client's rows according to specified filters
 func (db *DB) FilterPerson(data []byte, sort string) (Serializable, error) {
     var p Person
-    finalQuery := "SELECT * FROM Clients WHERE"
     sortBy := " ORDER BY Name"
-    query := make([]string, 0)
     err := json.Unmarshal(data, &p)
     if (err != nil) {
         return nil, err
     }
-    if p.Name != "" {
-        query = append(query, fmt.Sprintf(" Name LIKE '%s%%'", p.Name))
-    }
-    if p.Address != "" {
-        query = append(query, fmt.Sprintf(" Address LIKE '%s%%'", p.Address))
-    }
-    if p.Email != "" {
-        query = append(query, fmt.Sprintf(" Email LIKE '%s%%'", p.Email))
-    }
-    if p.PhoneNumber != "" {
-        query = append(query, fmt.Sprintf(" PhoneNumber LIKE '%s%%'", p.PhoneNumber))
-    }
-    if p.ID != 0 {
-        query = append(query, fmt.Sprintf(" Id = %d", p.ID))
-    }
-    if p.Type != 0 {
-        query = append(query, fmt.Sprintf(" ClientType = %d", p.Type))
+    finalQuery, err := db.constructFilterQuery("Clients", p)
+    if (err != nil) {
+        return nil, err
     }
     if sort == "desc" {
         sortBy += " DESC"
     }
-    finalQuery += strings.Join(query, " AND") + sortBy
+    finalQuery += sortBy
     return db.getPersonsQuery(finalQuery)
 }

@@ -13,7 +13,7 @@ type Product struct{
     Name string         `json:"name"`
     Company string      `json:"company"`
     Place int           `json:"place"`
-    Column int          `json:"column"`
+    Column int          `json:"column" sql:"Columm"`
     Row int             `json:"row"`
 }
 //FromJSON for Product converts JSON to Product entry
@@ -29,6 +29,10 @@ type Products []Product
 func (p Products) ToJSON() (string, error) {
     json, err := json.MarshalIndent(p, "", "    ")
     return string(json), err
+}
+
+func (db *DB) InitRef() {
+    db.constructFilterQuery("dsf", Product{"ffff", "dank", "memes", 1, 1, 1});
 }
 
 func (db *DB) getProductsQuery(q string) (Serializable, error) {
@@ -133,30 +137,15 @@ func (db *DB) DeleteProduct(parse []byte) error {
 //FilterProduct filters Good's rows according to specified filters
 func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
     var p Product
-    finalQuery := "SELECT * FROM Goods WHERE"
     sortBy := " ORDER BY Name"
     query := make([]string, 0)
     err := json.Unmarshal(data, &p)
     if (err != nil) {
         return nil, err
     }
-    if p.Serial != "" {
-        query = append(query, fmt.Sprintf(" Serial LIKE '%s%%'", p.Serial))
-    }
-    if p.Name != "" {
-        query = append(query, fmt.Sprintf(" Name LIKE '%s%%'", p.Name))
-    }
-    if p.Company != "" {
-        query = append(query, fmt.Sprintf(" Manufacturer LIKE '%s%%'", p.Company))
-    }
-    if p.Place != 0 {
-        query = append(query, fmt.Sprintf(" Place = %d", p.Place))
-    }
-    if p.Row != 0 {
-        query = append(query, fmt.Sprintf(" Row = %d", p.Row))
-    }
-    if p.Column != 0 {
-        query = append(query, fmt.Sprintf(" Columm = %d", p.Column))
+    finalQuery, err := db.constructFilterQuery("Goods", p)
+    if (err != nil) {
+        return nil, err
     }
     if sort == "desc" {
         sortBy += " DESC"
