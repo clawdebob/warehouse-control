@@ -4,7 +4,6 @@ import (
     "fmt"
     "encoding/json"
     "crypto/rand"
-    "strings"
 )
 
 //Product represents single DB row of product
@@ -29,10 +28,6 @@ type Products []Product
 func (p Products) ToJSON() (string, error) {
     json, err := json.MarshalIndent(p, "", "    ")
     return string(json), err
-}
-
-func (db *DB) InitRef() {
-    db.constructFilterQuery("dsf", Product{"ffff", "dank", "memes", 1, 1, 1});
 }
 
 func (db *DB) getProductsQuery(q string) (Serializable, error) {
@@ -94,28 +89,14 @@ func (db *DB) InsertProduct(parse []byte) error {
 //EditProduct edits specified parameters of one product entry
 func (db *DB) EditProduct(data []byte) error {
     var p Product
-    finalQuery := "UPDATE Goods SET"
-    query := make([]string, 0)
     err := json.Unmarshal(data, &p)
     if (err != nil) {
         return err
     }
-    if p.Name != "" {
-        query = append(query, fmt.Sprintf(" Name = '%s'", p.Name))
+    finalQuery, err := db.update("Goods", p)
+    if (err != nil) {
+        return err
     }
-    if p.Company != "" {
-        query = append(query, fmt.Sprintf(" Manufacturer = '%s'", p.Company))
-    }
-    if p.Place != 0 {
-        query = append(query, fmt.Sprintf(" Place = %d", p.Place))
-    }
-    if p.Row != 0 {
-        query = append(query, fmt.Sprintf(" Row = %d", p.Row))
-    }
-    if p.Column != 0 {
-        query = append(query, fmt.Sprintf(" Columm = %d", p.Column))
-    }
-    finalQuery += strings.Join(query, " ,")
     if p.Serial != "" {
         finalQuery += fmt.Sprintf(" WHERE Serial = '%s'", p.Serial)
     } else {
@@ -138,18 +119,17 @@ func (db *DB) DeleteProduct(parse []byte) error {
 func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
     var p Product
     sortBy := " ORDER BY Name"
-    query := make([]string, 0)
     err := json.Unmarshal(data, &p)
     if (err != nil) {
         return nil, err
     }
-    finalQuery, err := db.constructFilterQuery("Goods", p)
+    finalQuery, err := db.filter("Goods", p)
     if (err != nil) {
         return nil, err
     }
     if sort == "desc" {
         sortBy += " DESC"
     }
-    finalQuery += strings.Join(query, " AND") + sortBy
+    finalQuery += sortBy
     return db.getProductsQuery(finalQuery)
 }

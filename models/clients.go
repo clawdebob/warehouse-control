@@ -2,7 +2,6 @@ package models
 
 import (
     "encoding/json"
-    "strings"
     "fmt"
 )
 //Person struct represents single DB row of client
@@ -84,28 +83,14 @@ func (db *DB) DeletePerson(parse []byte) error {
 //EditPerson edits peson with selected ID
 func (db *DB) EditPerson(data []byte) error{
     var p Person
-    finalQuery := "UPDATE Clients SET"
-    query := make([]string, 0)
     err := json.Unmarshal(data, &p)
     if (err != nil) {
         return err
     }
-    if p.Name != "" {
-        query = append(query, fmt.Sprintf(" Name = '%s'", p.Name))
+    finalQuery, err := db.update("Clients", p)
+    if (err != nil) {
+        return err
     }
-    if p.Address != "" {
-        query = append(query, fmt.Sprintf(" Address = '%s'", p.Address))
-    }
-    if p.Email != "" {
-        query = append(query, fmt.Sprintf(" Email = '%s'", p.Email))
-    }
-    if p.PhoneNumber != "" {
-        query = append(query, fmt.Sprintf(" PhoneNumber = '%s'", p.PhoneNumber))
-    }
-    if p.Type != 0 {
-        query = append(query, fmt.Sprintf(" ClientType = %d", p.Type))
-    }
-    finalQuery += strings.Join(query, " ,")
     if p.ID != 0 {
         finalQuery += fmt.Sprintf(" WHERE Id = %d", p.ID)
     } else {
@@ -123,7 +108,7 @@ func (db *DB) FilterPerson(data []byte, sort string) (Serializable, error) {
     if (err != nil) {
         return nil, err
     }
-    finalQuery, err := db.constructFilterQuery("Clients", p)
+    finalQuery, err := db.filter("Clients", p)
     if (err != nil) {
         return nil, err
     }

@@ -19,7 +19,6 @@ func main() {
         log.Panic(err)
     }
     env := &Env{db}
-    env.db.InitRef()
 
     http.HandleFunc("/add/product", makeTxHandler(env.db.InsertProduct, "POST"))
     http.HandleFunc("/add/person", makeTxHandler(env.db.InsertPerson, "POST"))
