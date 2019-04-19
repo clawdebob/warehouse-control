@@ -102,7 +102,6 @@ func (db *DB) EditProduct(data []byte) error {
     } else {
         return fmt.Errorf("serial is empty")
     }
-    fmt.Println(finalQuery)
 
     return db.execEntity(finalQuery)
 }
