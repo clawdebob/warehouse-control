@@ -10,7 +10,7 @@ import (
 type Product struct{
     Serial string       `json:"serial"`
     Name string         `json:"name"`
-    Company string      `json:"company"`
+    Company string      `json:"company" sql:"Manufacturer"`
     Place int           `json:"place"`
     Column int          `json:"column" sql:"Columm"`
     Row int             `json:"row"`
@@ -102,6 +102,7 @@ func (db *DB) EditProduct(data []byte) error {
     } else {
         return fmt.Errorf("serial is empty")
     }
+    fmt.Println(finalQuery)
 
     return db.execEntity(finalQuery)
 }
