@@ -56,7 +56,7 @@ _Пример с таблицей "Goods"_
 Запрос добавляет товар в таблицу. Все представленные поля обязательны для заполнения.
 ```json
 url: "/add/product"
-method: "GET",
+method: "POST",
 data: {
     "name": "Бананы",
     "company": "Кубинские фрукты",
@@ -101,7 +101,7 @@ _Пример с таблицей "Goods"_
 но можно и отсортировать в обратном порядке передав в заголовок sort параметр "desc".
 ```json
 url: "/filter/product"
-method: "POST",
+method: "GET",
 headers: "sort: desc"
 data: {
     "name": "Надувной",
