@@ -16,6 +16,7 @@ type Serializable interface {
 type Datastore interface {
     AllProducts() (Serializable, error)
     AllPersons() (Serializable, error)
+    AllOrders() (Serializable, error)
     InsertProduct([]byte) error
     DeleteProduct([]byte) error
     InsertPerson([]byte) error
