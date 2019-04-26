@@ -51,3 +51,20 @@ func (db *DB) getOrdersQuerry(q string) (Serializable, error) {
 func (db *DB) AllOrders() (Serializable, error){
   return db.getOrdersQuerry("SELECT * FROM Orders")
 }
+
+func (db *DB) InsertOrder(parse []byte) error {
+  var o Order
+  err := json.Unmarshal(parse, &o)
+  if(err != nil){
+    return nil
+  }
+
+  return db.execEntity(
+    "INSERT INTO Orders(Id, Serial, Date, Type, ClientId) VALUES($1,$2,$3,$4,$5)",
+    o.Id,
+    o.Serial,
+    o.Date,
+    o.Type,
+    o.ClinetId,
+  )
+}
