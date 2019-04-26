@@ -15,7 +15,7 @@ type Order struct{
 
 type Orders []Order
 
-func (o Orders) ToJSON (string, error) {
+func (o Orders) ToJSON() (string, error) {
   json, err := json.MarshalIndent(o, "", "    ")
   return string(json), err
 }
@@ -31,13 +31,13 @@ func (db *DB) getOrdersQuerry(q string) (Serializable, error) {
   orders := Orders{}
 
   for rows.Next() {
-    o := Order{}
+    o := Order {}
     err := rows.Scan(
       &o.Id,
       &o.Serial,
       &o.Date,
       &o.Type,
-      &o.ClinetId
+      &o.ClinetId,
     )
 
     if err != nil {
