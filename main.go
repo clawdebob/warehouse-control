@@ -22,10 +22,12 @@ func main() {
 
     http.HandleFunc("/add/product", makeTxHandler(env.db.InsertProduct))
     http.HandleFunc("/add/person", makeTxHandler(env.db.InsertPerson))
+    http.HandleFunc("/add/order", makeTxHandler(env.db.InsertOrder))
     http.HandleFunc("/delete/product", makeDeleteHandler(env.db.DeleteProduct))
     http.HandleFunc("/delete/person", makeDeleteHandler(env.db.DeletePerson))
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
     http.HandleFunc("/persons", makeGetAllHandler(env.db.AllPersons))
+    http.HandleFunc("/orders", makeGetAllHandler(env.db.AllOrders))
     http.HandleFunc("/filter/product", makeFilterHandler(env.db.FilterProduct))
     http.HandleFunc("/filter/person", makeFilterHandler(env.db.FilterPerson))
     http.HandleFunc("/edit/product", makeTxHandler(env.db.EditProduct))
