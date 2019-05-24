@@ -60,8 +60,7 @@ func (db *DB) InsertOrder(parse []byte) error {
   }
 
   return db.execEntity(
-    "INSERT INTO Orders(Id, Serial, Date, Type, ClientId) VALUES($1,$2,$3,$4,$5)",
-    o.Id,
+    "INSERT INTO Orders(Serial, Date, Type, ClientId) VALUES($1,$2,$3,$4)",
     o.Serial,
     o.Date,
     o.Type,
