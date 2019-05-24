@@ -69,7 +69,7 @@ func (db *DB) InsertOrder(parse []byte) error {
   )
 }
 
-func DeleteOrder(parse []byte) error{
+func (db *DB)DeleteOrder(parse []byte) error{
   var o Order
   err := json.Unmarshal(parse, &o)
   if (err != nil) {
@@ -90,7 +90,7 @@ func (db* DB) EditOrder(data []byte) error{
     return err
   }
 
-  if p.Id != 0 {
+  if o.Id != 0 {
     finalQuery += fmt.Sprintf(" WHERE Id = %d", o.Id)
   } else {
     return fmt.Errorf("id is invalid")
