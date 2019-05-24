@@ -13,7 +13,7 @@ type Env struct {
 }
 
 func main() {
-    const port = ":8080"
+    const port = ":8090"
     db, err := models.NewDB("warehouse.db")
     if err != nil {
         log.Panic(err)
@@ -25,6 +25,7 @@ func main() {
     http.HandleFunc("/add/order", makeTxHandler(env.db.InsertOrder))
     http.HandleFunc("/delete/product", makeDeleteHandler(env.db.DeleteProduct))
     http.HandleFunc("/delete/person", makeDeleteHandler(env.db.DeletePerson))
+    http.HandleFunc("/delete/order", makeDeleteHandler(env.db.DeleteOrder))
     http.HandleFunc("/products", makeGetAllHandler(env.db.AllProducts))
     http.HandleFunc("/persons", makeGetAllHandler(env.db.AllPersons))
     http.HandleFunc("/orders", makeGetAllHandler(env.db.AllOrders))
@@ -32,6 +33,7 @@ func main() {
     http.HandleFunc("/filter/person", makeFilterHandler(env.db.FilterPerson))
     http.HandleFunc("/edit/product", makeTxHandler(env.db.EditProduct))
     http.HandleFunc("/edit/person", makeTxHandler(env.db.EditPerson))
+    http.HandleFunc("/edit/order", makeTxHandler(env.db.EditOrder))
     log.Print("server has started on http://127.0.0.1" + port)
     log.Fatal(http.ListenAndServe(port, nil))
 }

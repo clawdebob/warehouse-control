@@ -6,11 +6,11 @@ import(
 )
 
 type Order struct{
-  Id uint
-  Serial string
-  Date string
-  Type int
-  ClinetId int
+  Id uint           `json:"id"`
+  Serial string     `json:"name"`
+  Date string       `json:"date"`
+  Type int          `json:"type"`
+  ClinetId int      `json:"client_id"`
 }
 
 type Orders []Order
@@ -67,4 +67,34 @@ func (db *DB) InsertOrder(parse []byte) error {
     o.Type,
     o.ClinetId,
   )
+}
+
+func DeleteOrder(parse []byte) error{
+  var o Order
+  err := json.Unmarshal(parse, &o)
+  if (err != nil) {
+    return err
+  }
+  return db.execEntity("DELETE FROM Orders WHERE Id = ?", o.Id)
+}
+
+func (db* DB) EditOrder(data []byte) error{
+  var o Order
+  err := json.Unmarshal(data, &o)
+  if (err != nil){
+    return err
+  }
+
+  finalQuery, err := db.update("Orders", o)
+  if (err != nil){
+    return err
+  }
+
+  if p.Id != 0 {
+    finalQuery += fmt.Sprintf(" WHERE Id = %d", o.Id)
+  } else {
+    return fmt.Errorf("id is invalid")
+  }
+
+  return db.execEntity(finalQuery)
 }
