@@ -31,6 +31,7 @@ func main() {
     http.HandleFunc("/orders", makeGetAllHandler(env.db.AllOrders))
     http.HandleFunc("/filter/product", makeFilterHandler(env.db.FilterProduct))
     http.HandleFunc("/filter/person", makeFilterHandler(env.db.FilterPerson))
+    http.HandleFunc("/filter/order", makeFilterHandler(env.db.FilterOrder))
     http.HandleFunc("/edit/product", makeTxHandler(env.db.EditProduct))
     http.HandleFunc("/edit/person", makeTxHandler(env.db.EditPerson))
     http.HandleFunc("/edit/order", makeTxHandler(env.db.EditOrder))

@@ -25,6 +25,7 @@ type Datastore interface {
     DeleteOrder([]byte) error
     FilterProduct([]byte, string) (Serializable, error)
     FilterPerson([]byte, string) (Serializable, error)
+    FilterOrder([]byte, string) (Serializable, error)
     EditProduct([]byte) error
     EditPerson([]byte) error
     EditOrder([]byte) error

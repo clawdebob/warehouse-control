@@ -97,3 +97,24 @@ func (db* DB) EditOrder(data []byte) error{
 
   return db.execEntity(finalQuery)
 }
+
+func (db *DB) FilterOrder(data []byte, sort string) (Serializable, error){
+	var o Order
+	sortBy := " ORDER BY Date"
+	err:= json.Unmarshal(data, &o)
+	if (err != nil){
+		return nil, err
+	}
+
+	finalQuery, err :=  db.filter("Orders", o)
+	if (err != nil){
+		return nil, err
+	}
+
+	if (sort = "desc"){
+		sortBy+=" DESC"
+	}
+
+	finalQuery+=sortBy
+	return db.GetOrdersQuery(finalQuery)
+}
