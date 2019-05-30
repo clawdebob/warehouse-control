@@ -59,7 +59,7 @@ func (db *DB) AllPersons() (Serializable, error) {
 func (db *DB) InsertPerson(parse []byte) error {
     var p Person
     err := json.Unmarshal(parse, &p)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     return db.execEntity(
@@ -84,11 +84,11 @@ func (db *DB) DeletePerson(parse []byte) error {
 func (db *DB) EditPerson(data []byte) error{
     var p Person
     err := json.Unmarshal(data, &p)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     finalQuery, err := db.update("Clients", p)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     if p.ID != 0 {
@@ -105,11 +105,11 @@ func (db *DB) FilterPerson(data []byte, sort string) (Serializable, error) {
     var p Person
     sortBy := " ORDER BY Name"
     err := json.Unmarshal(data, &p)
-    if (err != nil) {
+    if err != nil {
         return nil, err
     }
     finalQuery, err := db.filter("Clients", p)
-    if (err != nil) {
+    if err != nil {
         return nil, err
     }
     if sort == "desc" {

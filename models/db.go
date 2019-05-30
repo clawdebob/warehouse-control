@@ -89,18 +89,18 @@ func queryWrapper (sQuery string, sCondition string, sep string) (func (string, 
 func (db *DB) execEntity(q string, args ...interface{}) error {
     req, err := db.Prepare(q)
     defer req.Close()
-    if (err != nil) {
+    if err != nil {
         return err
     }
     res, err := req.Exec( args...)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     rc, err := res.RowsAffected()
-    if (err != nil) {
+    if err != nil {
         return err
     }
-    if (rc == 0) {
+    if rc == 0 {
         return fmt.Errorf("warning!!! 0 rows affected")
     }
     return nil

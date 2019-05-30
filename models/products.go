@@ -90,11 +90,11 @@ func (db *DB) InsertProduct(parse []byte) error {
 func (db *DB) EditProduct(data []byte) error {
     var p Product
     err := json.Unmarshal(data, &p)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     finalQuery, err := db.update("Goods", p)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     if p.Serial != "" {
@@ -109,7 +109,7 @@ func (db *DB) EditProduct(data []byte) error {
 func (db *DB) DeleteProduct(parse []byte) error {
     var p Product
     err := json.Unmarshal(parse, &p)
-    if (err != nil) {
+    if err != nil {
         return err
     }
     id := p.Serial
@@ -120,11 +120,11 @@ func (db *DB) FilterProduct(data []byte, sort string) (Serializable, error) {
     var p Product
     sortBy := " ORDER BY Name"
     err := json.Unmarshal(data, &p)
-    if (err != nil) {
+    if err != nil {
         return nil, err
     }
     finalQuery, err := db.filter("Goods", p)
-    if (err != nil) {
+    if err != nil {
         return nil, err
     }
     if sort == "desc" {

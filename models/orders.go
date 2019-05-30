@@ -10,7 +10,7 @@ type Order struct{
   Serial string     `json:"serial"`
   Date string       `json:"date"`
   Type int          `json:"type"`
-  ClinetId int      `json:"client_id"`
+  ClientId int      `json:"client_id"`
 }
 
 type Orders []Order
@@ -37,7 +37,7 @@ func (db *DB) getOrdersQuery(q string) (Serializable, error) {
       &o.Serial,
       &o.Date,
       &o.Type,
-      &o.ClinetId,
+      &o.ClientId,
     )
 
     if err != nil {
@@ -64,7 +64,7 @@ func (db *DB) InsertOrder(parse []byte) error {
     o.Serial,
     o.Date,
     o.Type,
-    o.ClinetId,
+    o.ClientId,
   )
 }
 
@@ -80,12 +80,12 @@ func (db *DB)DeleteOrder(parse []byte) error{
 func (db* DB) EditOrder(data []byte) error{
   var o Order
   err := json.Unmarshal(data, &o)
-  if (err != nil){
+  if err != nil {
     return err
   }
 
   finalQuery, err := db.update("Orders", o)
-  if (err != nil){
+  if err != nil {
     return err
   }
 
