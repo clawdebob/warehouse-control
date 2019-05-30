@@ -20,7 +20,7 @@ func (o Orders) ToJSON() (string, error) {
   return string(json), err
 }
 
-func (db *DB) getOrdersQuerry(q string) (Serializable, error) {
+func (db *DB) getOrdersQuery(q string) (Serializable, error) {
   fmt.Println(q);
   rows, err := db.Query(q)
   if err != nil {
@@ -49,7 +49,7 @@ func (db *DB) getOrdersQuerry(q string) (Serializable, error) {
 }
 
 func (db *DB) AllOrders() (Serializable, error){
-  return db.getOrdersQuerry("SELECT * FROM Orders")
+  return db.getOrdersQuery("SELECT * FROM Orders")
 }
 
 func (db *DB) InsertOrder(parse []byte) error {
@@ -107,14 +107,14 @@ func (db *DB) FilterOrder(data []byte, sort string) (Serializable, error){
 	}
 
 	finalQuery, err :=  db.filter("Orders", o)
-	if (err != nil){
+	if err != nil {
 		return nil, err
 	}
 
-	if (sort = "desc"){
+	if sort == "desc" {
 		sortBy+=" DESC"
 	}
 
 	finalQuery+=sortBy
-	return db.GetOrdersQuery(finalQuery)
+	return db.getOrdersQuery(finalQuery)
 }
