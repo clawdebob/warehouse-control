@@ -6,7 +6,7 @@ import(
 )
 
 type Order struct{
-  Id uint           `json:"id"`
+  Id int           `json:"id"`
   Serial string     `json:"serial"`
   Date string       `json:"date"`
   Type int          `json:"type"`
